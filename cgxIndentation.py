@@ -1,3 +1,5 @@
+import re
+import string
 
 class CgxIndentation:
     def __init__(self, test_dir) -> None:
@@ -6,7 +8,6 @@ class CgxIndentation:
         self.input_file = open(self.input_file_name, 'r')
         self.output_file = open(self.output_file_name, 'w')
         self.expected_file_name = test_dir + "/expected.txt"
-        pass
 
     def write(self,*args):
         for i in args:
@@ -14,9 +15,42 @@ class CgxIndentation:
 
     def generateCgx(self):
         lines_list = self.input_file.readlines()
-        # nb_lines = int(lines_list[0])
-        lines = ''.join(lines_list[1:]).replace('\n','').replace(' ','')
-        self.write(lines)
+        # put everything in the same line
+        all = ''.join(lines_list[1:]).replace('\n','')
+
+        indent = 0
+        in_string = False
+        res = []
+        # iterate through each characters of "all" and the next non-blank character
+        for c,cn in [(all[i], all[i+1:].lstrip()[0]) for i in range(len(all)-1)]+[(all[-1], all[-1])]:
+            # we don't want to modify the strings, delimited by ' '
+            if c == '\'':
+                in_string = not in_string
+            if in_string:
+                res += c
+            else:
+                if (c == '(' and cn == ')') or (c == '(' and cn == '('):
+                    res += '\n' + ' '*indent + c
+                    indent += 4
+                elif c == '(':
+                    res += '\n' + ' '*indent
+                    indent += 4
+                    res += c + '\n' + ' '*indent
+                elif c == ')':
+                    indent -= 4
+                    res += '\n' + ' '*indent + c
+                elif c == ';' and cn != '(':
+                    res += c + '\n' + ' '*indent
+                elif c != ' ':
+                    res += c
+
+        # remove the first line if it's empty (appends if the first char of "all" was a '(')
+        if res[0] == '\n':
+            res.remove('\n')
+            
+        # convert the result to a single string and write it in the output file
+        self.write(''.join(res))
+    
     
     def closeFiles(self):
         self.input_file.close()
