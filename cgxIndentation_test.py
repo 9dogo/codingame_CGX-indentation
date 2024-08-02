@@ -43,3 +43,9 @@ def test_full_example():
     cgxIndentation.generateCgx()
     cgxIndentation.closeFiles()
     assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
+
+def test_single_bloc_one_value():
+    cgxIndentation = CgxIndentation("tests/additional_tests/single_bloc_one_value")
+    cgxIndentation.generateCgx()
+    cgxIndentation.closeFiles()
+    assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())

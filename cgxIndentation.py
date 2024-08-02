@@ -47,6 +47,8 @@ class CgxIndentation:
         # remove the first line if it's empty (appends if the first char of "all" was a '(')
         if res[0] == '\n':
             res.remove('\n')
+        if res[0] == '\t':
+            res.remove('\n')
             
         # convert the result to a single string and write it in the output file
         self.write(''.join(res))
