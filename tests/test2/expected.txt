@@ -1,1 +1,1 @@
-' Content with spaces and	tabs'
+' Content with spaces and	tabs and special characters ; ( )'

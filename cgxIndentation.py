@@ -13,45 +13,74 @@ class CgxIndentation:
         for i in args:
             print(i, file=self.output_file, end="")
 
+    def isIndexInBounds(self, index, bounds):
+        for b in bounds:
+            if index > b[0] and index < b[1]:
+                return True
+        return False
+
+    def replaceMatchingPattern(self, c, replacement):
+        # retrieve position of single quotes
+        quotes = [m.start() for m in re.compile("\'").finditer(self.all)]
+        strings = [(quotes[i], quotes[i+1]) for i in range(len(quotes)-1) if i%2==0]
+        print("strings ", strings)
+        # retrieve the position of all the characters 'c'
+        char_indexes = [(m.start(), m.end()) for m in re.compile(c).finditer(self.all)][::-1]
+        print("indexes of ", c, " : ", char_indexes)
+        # insert an end of line behind all these characters, if they are not in a string
+        for cs, ce in char_indexes:
+            if not self.isIndexInBounds(cs, strings):
+                self.all = self.all[:cs] + replacement + self.all[ce:]
+
+
     def generateCgx(self):
         lines_list = self.input_file.readlines()
         # put everything in the same line
-        all = ''.join(lines_list[1:]).replace('\n','')
+        self.all = ''.join(lines_list[1:]).replace('\n','')
 
+        print(self.all)
+
+        # we don't want to work with the first or the last character
+        self.all = "\n" + self.all + "\n"
+
+        # remove spaces and tabs after equals
+        self.replaceMatchingPattern("[\s]*[\t]*\=[\s]*[\t]*", "=")
+        # insert an end of line after ; unless they are followed by a (
+        self.replaceMatchingPattern(";", ";\n")
+        # insert an end of line before and after (
+        self.replaceMatchingPattern("\(", "\n(\n")
+        # insert an end of line before )
+        self.replaceMatchingPattern("\)", "\n)")
+        
+        # remove consecutive end of line
+        self.all = re.sub("[\n]+", "\n", self.all)
+
+        # remove indentation
+        self.all = self.all.strip()
+        self.all = re.sub("\n\s*\t*", "\n", self.all)
+
+        print(self.all)
+
+        # add the correct indentation
+        # -> split self.all into lines, add the correct number of tabulation for each line by counting the opening and closing parenthesis
+        lines = self.all.split("\n")
+
+        res = ""
         indent = 0
-        in_string = False
-        res = []
-        # iterate through each characters of "all" and the next non-blank character
-        for c,cn in [(all[i], all[i+1:].lstrip()[0]) for i in range(len(all)-1)]+[(all[-1], all[-1])]:
-            # we don't want to modify the strings, delimited by ' '
-            if c == '\'':
-                in_string = not in_string
-            if in_string:
-                res += c
+        for l in lines:
+            if l[0] == ')':
+                indent -= 4
+                res += '\n' + indent * ' ' + l.rstrip()
             else:
-                if (c == '(' and cn == ')') or (c == '(' and cn == '('):
-                    res += '\n' + ' '*indent + c
+                res += '\n' + indent * ' ' + l.rstrip()
+                if l[0] == '(':
                     indent += 4
-                elif c == '(':
-                    res += '\n' + ' '*indent
-                    indent += 4
-                    res += c + '\n' + ' '*indent
-                elif c == ')':
-                    indent -= 4
-                    res += '\n' + ' '*indent + c
-                elif c == ';' and cn != '(':
-                    res += c + '\n' + ' '*indent
-                elif c != ' ':
-                    res += c
 
-        # remove the first line if it's empty (appends if the first char of "all" was a '(')
-        if res[0] == '\n':
-            res.remove('\n')
-        if res[0] == '\t':
-            res.remove('\n')
-            
-        # convert the result to a single string and write it in the output file
-        self.write(''.join(res))
+        # remove the first line as it is empty
+        res = res.lstrip()
+
+        # write the result into the output file
+        self.write(res)
     
     
     def closeFiles(self):

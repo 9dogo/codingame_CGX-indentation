@@ -38,6 +38,18 @@ def test_empty_bloc():
     cgxIndentation.closeFiles()
     assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
 
+def test_several_blocs():
+    cgxIndentation = CgxIndentation("tests/test7")
+    cgxIndentation.generateCgx()
+    cgxIndentation.closeFiles()
+    assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
+
+def test_several_key_value():
+    cgxIndentation = CgxIndentation("tests/test9")
+    cgxIndentation.generateCgx()
+    cgxIndentation.closeFiles()
+    assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
+
 def test_full_example():
     cgxIndentation = CgxIndentation("tests/test11")
     cgxIndentation.generateCgx()
@@ -46,6 +58,19 @@ def test_full_example():
 
 def test_single_bloc_one_value():
     cgxIndentation = CgxIndentation("tests/additional_tests/single_bloc_one_value")
+    cgxIndentation.generateCgx()
+    cgxIndentation.closeFiles()
+    assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
+
+def test_regex_equal():
+    cgxIndentation = CgxIndentation("tests/additional_tests/equal")
+    cgxIndentation.generateCgx()
+    cgxIndentation.closeFiles()
+    assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
+
+
+def test_simple_key_value_with_spaces():
+    cgxIndentation = CgxIndentation("tests/additional_tests/simple_key_value_with_spaces")
     cgxIndentation.generateCgx()
     cgxIndentation.closeFiles()
     assert(open(cgxIndentation.output_file_name, 'r').read() == open(cgxIndentation.expected_file_name, 'r').read())
