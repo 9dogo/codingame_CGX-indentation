@@ -143,7 +143,7 @@ def test_single_bloc_one_value() -> None:
     Test : one bloc, one value
     """
     input_fname, output_fname, expected_fname = get_input_output_expected("tests"
-        +"/additional_tests/single_bloc_one_value")
+        +"/additional_tests/single_bloc_one_value/")
     with (open(input_fname, 'r', encoding="utf8") as input_file,
         open(output_fname, 'w', encoding="utf8") as output_file) :
         cgx_indentation = CgxIndentation()
