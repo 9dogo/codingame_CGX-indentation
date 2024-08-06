@@ -1,25 +1,78 @@
+"""
+Provide class CgxIndentation
+"""
+
+from io import TextIOWrapper
 import re
 
-class Cgx_indentation:
-    def __init__(self, test_dir) -> None:
-        self.input_file_name = test_dir + "/input.txt"
-        self.output_file_name = test_dir + "/output.txt"
-        self.input_file = open(self.input_file_name, 'r')
-        self.output_file = open(self.output_file_name, 'w')
-        self.expected_file_name = test_dir + "/expected.txt"
+class CgxIndentation:
+    """
+    A class used to indent a content in a CGX way (codingame puzzle)
 
-    def write(self,*args):
-        for i in args:
-            print(i, file=self.output_file, end="")
+    Attributes
+    ----------
+    input_cgx : str
+        the content to indent in CGX
 
-    def is_index_in_bounds(self, index, bounds):
+    Methods
+    -------
+    __init__()
+        Constructor
+    
+    write(*args)
+        Write the *args in the output file
+
+    is_index_in_bounds(index, bounds)
+        Determine wheter or not an index is within one of the bounds
+    
+    replace_matching_patterns(c, replacement)
+        Replace the character 'c' by 'replacement' in self.input_cgx
+    
+    generate_cgx
+        Indent the content of the input_file, write the result in the output file
+
+    close_files
+        Close the input and output files opened in __init__
+    """
+
+    def __init__(self) -> None:
+        """
+        Constructor
+        """
+        self.input_cgx = ""
+
+    def is_index_in_bounds(self, index : int, bounds : list) -> bool:
+        """
+        Determine wheter or not an index is within one of the bounds
+
+        Parameters
+        ----------
+        index : int
+            The index to check
+        bounds : list
+            The list of bounds
+
+        Return
+        ------
+        True if the index is in range of one of the bounds, else False
+        """
         for (bs, be) in bounds:
             if bs < index < be:
                 return True
         return False
 
-    def replace_matching_pattern(self, c, replacement):
-        # retrieve position of single quotes
+    def replace_matching_patterns(self, c : str, replacement : str) -> None:
+        """
+        Replace each pattern 'c' by 'replacement' if it is not in a string of input_cgx
+
+        Parameters
+        ----------
+        c : str
+            the pattern to replace in self.input_cgx
+        replacement : str
+            the string ot insert in self.input_cgx to replace 'c'
+        """
+        # retrieve position of single quotes, defining the strings
         quotes = [m.start() for m in re.compile("\'").finditer(self.input_cgx)]
         strings = [(quotes[i], quotes[i+1]) for i in range(len(quotes)-1) if i%2==0]
         print("strings ", strings)
@@ -32,8 +85,11 @@ class Cgx_indentation:
                 self.input_cgx = self.input_cgx[:cs] + replacement + self.input_cgx[ce:]
 
 
-    def generate_cgx(self):
-        lines_list = self.input_file.readlines()
+    def generate_cgx(self, input_file : TextIOWrapper, output_file : TextIOWrapper) -> None:
+        """
+        Indent the content of the input_file, write the result in the output file
+        """
+        lines_list = input_file.readlines()
         # put everything in the same line
         self.input_cgx = ''.join(lines_list[1:]).replace('\n','')
 
@@ -43,13 +99,13 @@ class Cgx_indentation:
         self.input_cgx = "\n" + self.input_cgx + "\n"
 
         # remove spaces and tabs after equals
-        self.replace_matching_pattern(r'[\s]*[\t]*\=[\s]*[\t]*', "=")
+        self.replace_matching_patterns(r'[\s]*[\t]*\=[\s]*[\t]*', "=")
         # insert an end of line after ; unless they are followed by a (
-        self.replace_matching_pattern(";", ";\n")
+        self.replace_matching_patterns(";", ";\n")
         # insert an end of line before and after (
-        self.replace_matching_pattern(r'\(', "\n(\n")
+        self.replace_matching_patterns(r'\(', "\n(\n")
         # insert an end of line before )
-        self.replace_matching_pattern(r'\)', "\n)")
+        self.replace_matching_patterns(r'\)', "\n)")
 
         # remove consecutive end of line
         self.input_cgx = re.sub("[\n]+", "\n", self.input_cgx)
@@ -80,9 +136,5 @@ class Cgx_indentation:
         res = res.lstrip()
 
         # write the result into the output file
-        self.write(res)
-
-    
-    def close_files(self):
-        self.input_file.close()
-        self.output_file.close()
+        for i in res:
+            print(i, file=output_file, end="")
